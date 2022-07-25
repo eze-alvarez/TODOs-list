@@ -2,15 +2,27 @@ import React from "react";
 import { AppUI } from "./appUI";
 
 
-const defaultTodos = [
-  {text:'cortar cebolla', completed: true},
-  {text:'comprar pan', completed: false},
-  {text:'terminar la tarea', completed: false}
-]
+// const defaultTodos = [
+//   {text:'cortar cebolla', completed: true},
+//   {text:'comprar pan', completed: false},
+//   {text:'terminar la tarea', completed: false}
+// ]
 
 function App() {
-  //estado inicial de nuestros TODOs
-  const [todos,setTodos] = React.useState(defaultTodos); 
+//traemos nuestros TODOs almacenados
+  const localStorageTodos = localStorage.getItem('TODOS_V1');
+  let parsedTodos;
+
+  if(!localStorageTodos){
+//si el usuario es nuevo no existe un item en localStorage, por lo tanto guardamos un arrav vacio []
+    localStorage.setItem('TODOS_V1',JSON.stringify([]));
+    parsedTodos = [];
+  } else {  //si existen TODOs en el localStorage los regresamos como nuestros todos
+    parsedTodos = JSON.parse(localStorageTodos)
+  }
+
+  //guardamos nuestros TODOs del localStorage en nuestro estado
+  const [todos,setTodos] = React.useState(parsedTodos); 
    //cantidad de TODOs completados
   const completedTodos = todos.filter(todo => !!todo.completed).length;
   //cantidad total de TODOs
@@ -26,16 +38,24 @@ function App() {
             const todoText = todo.text.toLowerCase();
             const searchText = searchValue.toLowerCase();
             return todoText.includes(searchText);
-    })
+    }); 
+  };
 
-  }
+// se crea la funcion para actualizar nuestro localStorage
+  const saveTodos = (newTodos) => {
+    const stringifiedTodos = JSON.stringify(newTodos);// convertimos a string
+    localStorage.setItem('TODOS_V1',stringifiedTodos);// los guardamos
+    setTodos(newTodos); //actualizamos el estado de nuestros TODOs
+}; 
+  
 //completando TODO
   const completeTodo = (text) =>{
       const todoIndex = todos.findIndex(todo=>todo.text === text);
       const newTodos = [...todos];
 
       newTodos[todoIndex].completed = true;
-      setTodos(newTodos);
+// Cada que el usuario interactúe con nuestra aplicación se guardarán los TODOs con nuestra nueva función
+      saveTodos(newTodos);
   };
 
 //elimiinando TODOs
@@ -44,7 +64,8 @@ function App() {
     const newTodos = [...todos];
 
     newTodos.splice(todoIndex,1);
-    setTodos(newTodos);
+// Cada que el usuario interactúe con nuestra aplicación se guardarán los TODOs con nuestra nueva función    
+    saveTodos(newTodos);
   };
 
 
