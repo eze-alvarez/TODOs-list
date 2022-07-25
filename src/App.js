@@ -34,6 +34,23 @@ function App() {
     })
 
   }
+//completando TODO
+  const completeTodo = (text) =>{
+      const todoIndex = todos.findIndex(todo=>todo.text === text);
+      const newTodos = [...todos];
+
+      newTodos[todoIndex].completed = true;
+      setTodos(newTodos);
+  };
+
+//elimiinando TODOs
+  const deleteTodo = (text) =>{
+    const todoIndex = todos.findIndex(todo=>todo.text === text);
+    const newTodos = [...todos];
+
+    newTodos.splice(todoIndex,1);
+    setTodos(newTodos);
+  };
 
 
   return (
@@ -54,6 +71,8 @@ function App() {
                 key={todo.text} 
                 text={todo.text} 
                 completed={todo.completed}
+                onComplete = {()=>completeTodo(todo.text)} // le paso el key como argumento
+                onDelete = {()=>deleteTodo(todo.text)} // le paso el key como argumento
             />
           ))}
         </TodoList>
