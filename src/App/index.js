@@ -9,37 +9,66 @@ import { AppUI } from "./appUI";
 // ]
 
 function useLocalStorage (itemName, initialValue){
-    //traemos nuestros TODOs almacenados
-    const localStorageItem = localStorage.getItem(itemName);
-    let parsedItem;
 
-    if(!localStorageItem){
-  //si el usuario es nuevo no existe un item en localStorage, por lo tanto guardamos un arrav vacio []
-          localStorage.setItem(itemName,JSON.stringify(initialValue));
-          parsedItem = initialValue;
-    } else {  //si existen TODOs en el localStorage los regresamos como nuestros todos
-          parsedItem = JSON.parse(localStorageItem)
-    }
+  //guardamos nuestros TODOs del localStorage en nuestro estado
+  const [error,setError] = React.useState(false);
+  const [loading,setLoading] = React.useState(true);
+  const [item,setItem] = React.useState(initialValue); 
 
-    //guardamos nuestros TODOs del localStorage en nuestro estado
-    const [item,setItem] = React.useState(parsedItem); 
+
+
+    React.useEffect(() => {
+        setTimeout(()=>{
+         try{
+          const localStorageItem = localStorage.getItem(itemName);
+          let parsedItem;
+      
+          if(!localStorageItem){
+        //si el usuario es nuevo no existe un item en localStorage, por lo tanto guardamos un arrav vacio []
+                localStorage.setItem(itemName,JSON.stringify(initialValue));
+                parsedItem = initialValue;
+          } else {  //si existen TODOs en el localStorage los regresamos como nuestros todos
+                parsedItem = JSON.parse(localStorageItem)
+          }
+          
+          setItem(parsedItem);
+          setLoading(false);
+         } catch(error){
+          setError(error);
+         }
+        },1000);
+    });
+
+
+
 
     // se crea la funcion para actualizar nuestro localStorage
     const saveItem = (newItem) => {
-          const stringifiedItem = JSON.stringify(newItem);// convertimos a string
-          localStorage.setItem(itemName,stringifiedItem);// los guardamos
-          setItem(newItem); //actualizamos el estado de nuestros TODOs
+          try{
+            const stringifiedItem = JSON.stringify(newItem);// convertimos a string
+            localStorage.setItem(itemName,stringifiedItem);// los guardamos
+            setItem(newItem); //actualizamos el estado de nuestros TODOs
+          }catch(error){
+           setError(error);
+          }
   }; 
 
-  return [
+  return {
     item, //recibir lo que quiera guarfar en localStorage
-    saveItem //actualizar lo que quiera guarfar en localStorage
-  ];
+    saveItem, //actualizar lo que quiera guarfar en localStorage
+    loading,
+    error,
+  };
 }
 
 function App() {
   
-  const [todos,saveTodos] = useLocalStorage('TODOS_V1',[]); //cuando se creo el custom Hook
+  const {
+    item : todos,
+    saveItem : saveTodos,
+    loading,
+    error,
+  } = useLocalStorage('TODOS_V1',[]); //cuando se creo el custom Hook
 
   
    //cantidad de TODOs completados
@@ -83,8 +112,11 @@ function App() {
   };
 
 
+  
   return (
     <AppUI
+        loading={loading}
+        error={error}
         totalTodos = {totalTodos}
         completedTodos = {completedTodos}
         searchValue = {searchValue}
